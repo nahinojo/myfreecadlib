@@ -16,9 +16,11 @@ except:
         + "python console. Then, re-execute this macro."
     )
 
-print("Please input the circles coordinates")
-print("in the form {x_coord, y_coord, radius}")
-print("separated by commas.\n")
+print(
+    "Please input the circles coordinates"
+    + "in the form {x_coord, y_coord, radius}"
+    + "separated by commas.\n"
+)
 coords = input()
 coords = coords.replace(" ","")
 coords = coords.split(",")

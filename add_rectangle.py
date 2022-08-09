@@ -18,8 +18,8 @@ except:
     )
 
 print(
-    "Please input the rectangle's coordinates in \n"
-    + "the form {x_coord, y_coord, x_len, y_len } \n"
+    "Please input the rectangle's coordinates in"
+    + "the form {x_coord, y_coord, x_len, y_len }"
     + "separated by commas.\n"
 )
 vals = input()
@@ -80,17 +80,6 @@ P4 = [x1, y0]
 numLines = [
     str(i)[1:13] for i in target_sketch.Geometry
 ].count("Line segment")
-
-
-print("x0: ", x0)
-print("x1: ", x1)
-print("y0: ", y0)
-print("y1: ", y1)
-print("P1: ",P1)
-print("P2: ",P2)
-print("P3: ",P3)
-print("P4: ",P4)
-print("numLines: ", numLines)
 
 # Generating line segments in FreeCAD's sketcher
 geoList = []
