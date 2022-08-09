@@ -21,20 +21,20 @@ print(
     + "in the form {x_coord, y_coord, radius}"
     + "separated by commas.\n"
 )
-coords = input()
-coords = coords.replace(" ","")
-coords = coords.split(",")
-coords = [float(i) for i in coords]
-print("x-coordinate: " + str(coords[0]))
-print("y-coordinate: " + str(coords[1]))
-print("radius: "+ str(coords[2]) + '\n')
+vals = input()
+vals = vals.replace(" ","")
+vals = vals.split(",")
+vals = [float(i) for i in vals]
+print("x-coordinate: " + str(vals[0]))
+print("y-coordinate: " + str(vals[1]))
+print("radius: "+ str(vals[2]) + '\n')
 
 # Appending circle using FreeCAD's syntax. 
 target_sketch.addGeometry(
     Part.Circle(
-        App.Vector(coords[0],coords[1],0),
+        App.Vector(vals[0],vals[1],0),
         App.Vector(0,0,1),
-        coords[2]),
+        vals[2]),
     False)
 App.ActiveDocument.recompute()
 print("Circle Generated!")
