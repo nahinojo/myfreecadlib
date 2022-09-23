@@ -33,7 +33,7 @@ def AddRectangle(sketch, x, y, x_len, y_len, loc = 'X'):
 
     Inputted location 'loc' dictates this relation. 
     """
-
+    loc = loc.upper()
     if loc not in {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'X'}:
         print("Location specified is invalid")
         return
