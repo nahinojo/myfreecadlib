@@ -24,12 +24,12 @@ def AddRectangle(sketch, x, y, x_len, y_len, loc = 'X'):
     The coordinates' relative location may be further specified.
 
     A --- B --- C
-    |           |
-    |           |
+    |           
+    |           
     H     X     D
-    |           |
-    |           |
-    G --- F --- E 
+    |           
+    |           
+    G     F     E 
 
     Inputted location 'loc' dictates this relation. 
     """
@@ -75,7 +75,7 @@ def AddRectangle(sketch, x, y, x_len, y_len, loc = 'X'):
     geoList.append(Part.LineSegment(App.Vector(*P2, 0),App.Vector(*P3, 0)))
     sketch.addGeometry(geoList,False)
 
-    # Connecting line segments using FreeCAD Coincident Constraints.
+    # Connecting line segments using FreeCAD's Coincident Constraints.
     conList = []
     conList.append(Sketcher.Constraint('Coincident',numLines,2,numLines+1,1))
     conList.append(Sketcher.Constraint('Coincident',numLines+1,2,numLines+2,1))
@@ -90,3 +90,42 @@ def AddRectangle(sketch, x, y, x_len, y_len, loc = 'X'):
     sketch.addConstraint(conList)
     
     App.ActiveDocument.recompute()
+    
+    
+def Slice(sketch, line_index, coord, symmetrical = False):
+    """
+    Splits line into segments at specified coordinates.
+    
+    Parameters
+    ----------
+    line: int
+        The index of the line to be sliced. The line's index is noted
+        in the Sketcher's 'Elements' tab. 
+    coord: tuple
+        The x and y coordinate to slice the line. Must be a real number
+        formatted as (x, y). 
+    symmetry: boolean, optional.
+        If True, slicing will be mirrored actoss
+    """
+    
+    line_coords_string = str(
+        sketch.Geometry[
+            line_index-=1
+        ]
+    )[14:38].split(' ')
+    line_coords = []
+    for lc in line_coords_string:
+        lc = lc.replace(')',"")
+        lc = lc.replace('(',"")
+        lc = lc.split(",")
+        lc = [float(n) for n in lc]
+        line_coords.append(tuple(lc))
+    
+    sketch.addGeometry(
+        Part.LineSegment(
+            App.Vector(0,0,0),
+            App.Vector(1,1,1)
+        ), False
+    )
+    
+    
