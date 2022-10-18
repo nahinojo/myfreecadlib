@@ -1,12 +1,11 @@
 import FreeCAD as App
 import Part
 import Sketcher
-import Sketcher.SketcherObject as SketcherObject
 
 
 class SketcherTool:
     
-    def __init__(self, sketch: SketcherObject = None) -> None:
+    def __init__(self, sketch = None) -> None:
         if sketch is None:
             try:
                 self.sketch = ActiveSketch
@@ -15,12 +14,12 @@ class SketcherTool:
         self._updateLineData()
         return
     
-    def _updateApp() -> None:
+    def _recomputeApp() -> None:
         App.ActiveDocument.recompute()
         return
         
     def _updateLineData(self) -> None:
-        line_coords_string = str(self.sketch.Geometry[line_index-1]).split(' ')
+        line_coords_string = str(self.sketch.Geometry).split(' ')
         line_coords_string = [c for c in line_coords_string if ',' in c]
         self.line_coords = []
         for lc in line_coords_string:
@@ -41,7 +40,7 @@ class SketcherTool:
                 App.Vector(*coordinate_2)
             ), False
         )
-        self._updateApp()
+        self._recomputeApp()
         return
 
     def addCircle(self, coordinate, radius) -> None:
@@ -52,9 +51,10 @@ class SketcherTool:
             Part.Circle(
                 App.Vector(*coordinate),
                 App.Vector(0,0,1),
-                radius),
+                radius
+            ),
             False)
-        self._updateApp()
+        self._recomputeApp()
         return
 
     def addRectangle(self, coordinate, x_len, y_len, location = 'X') -> None:
@@ -121,7 +121,7 @@ class SketcherTool:
         con_list.append(Sketcher.Constraint('Vertical',num_lines+3))
         self.sketch.addConstraint(con_list)
         
-        self._updateApp()
+        self._recomputeApp()
         return
         
         
@@ -146,7 +146,6 @@ class SketcherTool:
             If True, slicing will be mirrored actoss
         """
         
-        
         self.sketch.addGeometry(
             Part.LineSegment(
                 App.Vector(0,0,0),
@@ -154,6 +153,6 @@ class SketcherTool:
             ), False
         )
 
-        self._updateApp()
+        self._recomputeApp()
         return
     
