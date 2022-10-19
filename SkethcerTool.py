@@ -5,29 +5,34 @@ import Sketcher
 
 class SketcherTool:
     
-    def __init__(self, sketch = None) -> None:
-        if sketch is None:
-            try:
-                self.sketch = ActiveSketch
-            except:
-                raise NameError ("No Active Sketch Found")
+    def __init__(self, sketch) -> None:
+        self.sketch = sketch
         self._updateLineData()
-        return
+        return 
     
     def _recomputeApp() -> None:
         App.ActiveDocument.recompute()
         return
         
     def _updateLineData(self) -> None:
-        line_coords_string = str(self.sketch.Geometry).split(' ')
-        line_coords_string = [c for c in line_coords_string if ',' in c]
+        """
+        Generates list coordinate pairs for each line in the sketch.
+        """
+        line_coords_list = self.sketch.Geometry
+        # Extracts only (x,y,z) coordinates as strings from list.
+        line_coords_list = [
+            str(c)[
+                str(c).find('t') + 2:str(c).find('>') - 1
+            ].split(' ') for c in line_coords_list
+        ]
         self.line_coords = []
-        for lc in line_coords_string:
-            lc = lc.replace(')','')
-            lc = lc.replace('(','')
-            lc = lc.split(',')
-            lc = [float(n) for n in lc]
-            self.line_coords.append(tuple(lc))
+        for line_coords in line_coords_list:
+            new_coord = []
+            for lc in line_coords:
+                lc = lc.replace(')','').replace('(','').split(',')
+                lc = tuple([float(n) for n in lc])
+                new_coord.append(lc)
+            self.line_coords.append(new_coord)
         return
     
     def addLine(self, coordinate_1: tuple, coordinate_2: tuple) -> None:
