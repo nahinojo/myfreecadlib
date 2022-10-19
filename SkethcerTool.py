@@ -7,18 +7,19 @@ class SketcherTool:
     
     def __init__(self, sketch) -> None:
         self.sketch = sketch
-        self._updateLineData()
         return 
     
     def _recomputeApp() -> None:
         App.ActiveDocument.recompute()
         return
         
-    def _updateLineData(self) -> None:
+    def _extractLineSegmentData(self) -> None:
         """
-        Generates list coordinate pairs for each line in the sketch.
+        Generates list coordinate pairs for each line segment in the sketch.
         """
-        line_coords_list = self.sketch.Geometry
+        line_coords_list = [
+            val for val in self.sketch.Geometry if 'Line segment' in val
+        ]
         # Extracts only (x,y,z) coordinates as strings from list.
         line_coords_list = [
             str(c)[
@@ -35,22 +36,32 @@ class SketcherTool:
             self.line_coords.append(new_coord)
         return
     
-    def addLine(self, coordinate_1: tuple, coordinate_2: tuple) -> None:
+    def addLine(
+            self, 
+            coordinate_1: tuple,
+            coordinate_2: tuple,
+            recompute: bool = True
+    ) -> None:
         """
         Adds line between specified coordinates.
         """
         self.sketch.addGeometry(
             Part.LineSegment(
-                App.Vector(*coordinate_1),
-                App.Vector(*coordinate_2)
+                App.Vector(*coordinate_1, 0),
+                App.Vector(*coordinate_2, 0)
             ), False
         )
-        self._recomputeApp()
+        if recompute:
+            SketcherTool._recomputeApp()
         return
 
-    def addCircle(self, coordinate, radius) -> None:
+    def addCircle(
+            self, 
+            coordinate, 
+            radius
+    ) -> None:
         """
-        Adds circle to sketch on xy-plane at specified coordinate.
+        Adds circle to sketch at specified coordinate.
         """        
         self.sketch.addGeometry(
             Part.Circle(
@@ -62,7 +73,13 @@ class SketcherTool:
         self._recomputeApp()
         return
 
-    def addRectangle(self, coordinate, x_len, y_len, location = 'X') -> None:
+    def addRectangle(
+            self, 
+            coordinate, 
+            x_len, 
+            y_len, 
+            location = 'X'
+    ) -> None:
         """
         Adds rectangle to sketch on xy-plane at specified coordinate. 
 
@@ -100,7 +117,6 @@ class SketcherTool:
         else:
             y0 = coordinate[1] - y_len
             y1 = coordinate[1] 
-        
         P1 = [x1, y1]
         P2 = [x0, y1]
         P3 = [x0, y0]
@@ -126,7 +142,7 @@ class SketcherTool:
         con_list.append(Sketcher.Constraint('Vertical',num_lines+3))
         self.sketch.addConstraint(con_list)
         
-        self._recomputeApp()
+        SketcherTool._recomputeApp()
         return
         
         
@@ -150,14 +166,7 @@ class SketcherTool:
         symmetry: boolean, optional.
             If True, slicing will be mirrored actoss
         """
-        
-        self.sketch.addGeometry(
-            Part.LineSegment(
-                App.Vector(0,0,0),
-                App.Vector(1,1,1)
-            ), False
-        )
 
-        self._recomputeApp()
+        SketcherTool._recomputeApp()
         return
     
