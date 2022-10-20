@@ -3,37 +3,52 @@ import Part
 import Sketcher
 
 
-class SketcherTool:
-    
-    def __init__(self, sketch) -> None:
-        self.sketch = sketch
-        return 
-    
-    def _recomputeApp() -> None:
+def _recomputeApp() -> None:
         App.ActiveDocument.recompute()
         return
+
+
+def _validLineSegment(line_segment):
+    if type(line_segment) is not Part.LineSegment:
+        raise TypeError("Not 'Part.LineSegment' type")
+    else:
+        return line_segment
+
+
+def _validCoordinate(coord: tuple) -> tuple:
+    if type(coord) != tuple:
+        raise TypeError("Not 'tuple' type")
+    length = len(coord)
+    if length == 3:
+        return coord
+    elif length == 2:
+        return (coord[0], coord[1], 0)
+    else:
+        raise ValueError("Coordinate must have size 2 or 3")
+
+
+def _extractLineSegmentData(line_segment) -> None:
+    """
+    Generates coordinate endpoints of given line segment.
+    """
+    _validLineSegment(line_segment)
+    line_segment = str(line_segment)
+    line_segment = line_segment[
+        line_segment.find('t') + 2: line_segment.find('>') - 1
+    ].split(' ')
+    line_coords = []
+    for val in line_segment:
+        val = val.replace(')','').replace('(','').split(',')
+        val = tuple([float(n) for n in val])
+        line_coords.append(val)
+    return line_coords
         
-    def _extractLineSegmentData(self) -> None:
-        """
-        Generates list coordinate pairs for each line segment in the sketch.
-        """
-        line_coords_list = [
-            val for val in self.sketch.Geometry if 'Line segment' in val
-        ]
-        # Extracts only (x,y,z) coordinates as strings from list.
-        line_coords_list = [
-            str(c)[
-                str(c).find('t') + 2:str(c).find('>') - 1
-            ].split(' ') for c in line_coords_list
-        ]
-        self.line_coords = []
-        for line_coords in line_coords_list:
-            new_coord = []
-            for lc in line_coords:
-                lc = lc.replace(')','').replace('(','').split(',')
-                lc = tuple([float(n) for n in lc])
-                new_coord.append(lc)
-            self.line_coords.append(new_coord)
+
+class SketcherTool:
+
+
+    def __init__(self, sketch) -> None:
+        self.sketch = sketch
         return
     
     def addLine(
@@ -52,7 +67,7 @@ class SketcherTool:
             ), False
         )
         if recompute:
-            SketcherTool._recomputeApp()
+            _recomputeApp()
         return
 
     def addCircle(
@@ -70,7 +85,7 @@ class SketcherTool:
                 radius
             ),
             False)
-        self._recomputeApp()
+        _recomputeApp()
         return
 
     def addRectangle(
@@ -142,31 +157,37 @@ class SketcherTool:
         con_list.append(Sketcher.Constraint('Vertical',num_lines+3))
         self.sketch.addConstraint(con_list)
         
-        SketcherTool._recomputeApp()
+        _recomputeApp()
         return
         
         
     def sliceLine(
             self, 
-            line_index: int, 
-            coordinate: tuple, 
-            symmetrical: bool = False
+            line_index: int,
+            coord: tuple, 
     ) -> None:
         """
         Splits line into segments at specified coordinates.
-        
-        Parameters
-        ----------
-        line: int
-            The index of the line to be sliced. The line's index is noted
-            in the Sketcher's 'Elements' tab. 
-        coord: tuple
-            The x and y coordinate to slice the line. Must be a real number
-            formatted as (x, y). 
-        symmetry: boolean, optional.
-            If True, slicing will be mirrored actoss
         """
-
-        SketcherTool._recomputeApp()
+        midd_coord = _validCoordinate(coord)
+        line_segment = _validLineSegment(self.sketch.Geometry[line_index])
+        line_coord_1,line_coord_2 = _extractLineSegmentData(line_segment)
+        slope_1 = (midd_coord[1] - line_coord_1[1])/(midd_coord[0] - line_coord_1[0])
+        slope_2 = (midd_coord[1] - line_coord_2[1])/(midd_coord[0] - line_coord_2[0])
+        
+        if abs(slope_1 - slope_2) < .000001:
+            proper_coord = True
+        else:
+            # Numerical Analysis Here
+            pass
+                
+        print("slope 1:", slope_1)
+        print("slope 2:", slope_2)
+        return
+        
+        self.addLine(line_coord_1, midd_coord)
+        self.addLine(midd_coord, line_coord_2)
+        
+        _recomputeApp()
         return
     
