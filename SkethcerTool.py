@@ -1,3 +1,5 @@
+from matplotlib.mathtext import math_to_image
+from soupsieve import match
 import FreeCAD as App
 import Part
 import Sketcher
@@ -25,7 +27,6 @@ def _validCoordinate(coord: tuple) -> tuple:
     else:
         return (coord[0], coord[1], 0)
 
-
 def _extractLineSegmentData(line_segment) -> None:
     """
     Generates coordinate endpoints of given line segment.
@@ -46,9 +47,8 @@ def _extractLineSegmentData(line_segment) -> None:
 class SketcherTool:
 
 
-    def __init__(
-        self, 
-        sketch
+    def __init__(self, 
+                 sketch
     ) -> None:
         self.sketch = sketch
         return
@@ -61,28 +61,58 @@ class SketcherTool:
         return data
         
     
-    def addPoint(
-        self,
-        x: int or tuple,
-        y: int,
-        refresh: bool = True,
+    def addPoint(self,
+                 x: int or float or tuple,
+                 y: int or float = None,
+                 refresh: bool = True,
     ) -> None:
         """
         Adds point at specified coordinate
         """
-        if type(x) is int:
+        if type(x) is tuple:
+            coord = x
+        else:
             coord = (x, y)
         coord = _validCoordinate(coord)
         App.ActiveDocument.Sketch.addGeometry(Part.Point(App.Vector(*coord)))
         if refresh: _refreshApp()
         return
+    
+    def constrainCoincident(self,
+                            x: int or float or tuple,
+                            y: int or float = None,
+                            refresh: bool = True, 
+    ) -> None:
+        if type(x) is tuple:
+            coord = x
+        else:
+            coord = (x, y)
+        coord = _validCoordinate(coord)
         
-    def addLine(
-            self, 
-            coord_1: tuple,
-            coord_2: tuple,
-            coincident: bool = False,
-            refresh: bool = True
+        match_indeces = []
+        for i, line_coords in enumerate(self.getLineSegmentData()):
+            for j, lc in enumerate(line_coords):
+                if lc == coord:
+                    match_indeces.append((i, j + 1))
+        
+        if len(match_indeces) > 1:
+            for i in range(len(match_indeces) - 1):
+                self.sketch.addConstraint(
+                    Sketcher.Constraint(
+                        'Coincident',
+                        *match_indeces[i],
+                        *match_indeces[i + 1]
+                    )
+                )
+
+        if refresh: _refreshApp()
+        return
+        
+    def addLine(self, 
+                coord_1: tuple,
+                coord_2: tuple,
+                coincident: bool = False,
+                refresh: bool = True
     ) -> None:
         """
         Adds line between specified coordinates.
@@ -117,11 +147,10 @@ class SketcherTool:
         if refresh: _refreshApp()
         return
 
-    def addCircle(
-            self, 
-            coordinate: tuple, 
-            radius: float or int,
-            refresh: bool = True
+    def addCircle(self, 
+                  coordinate: tuple, 
+                  radius: float or int,
+                  refresh: bool = True
     ) -> None:
         """
         Adds circle to sketch at specified coordinate.
@@ -136,13 +165,12 @@ class SketcherTool:
         if refresh: _refreshApp()
         return
 
-    def addRectangle(
-            self, 
-            coord: tuple, 
-            x_len: float or int, 
-            y_len: float or int, 
-            relative_location: str = 'X',
-            refresh: bool = True
+    def addRectangle(self, 
+                     coord: tuple, 
+                     x_len: float or int, 
+                     y_len: float or int, 
+                     relative_location: str = 'X',
+                     refresh: bool = True
     ) -> None:
         """
         Adds rectangle to sketch on xy-plane at specified coordinate. 
@@ -210,12 +238,11 @@ class SketcherTool:
         return
         
         
-    def sliceLine(
-            self, 
-            line_index: int,
-            coord: tuple,
-            coincident: bool = False,
-            refresh: bool = True
+    def sliceLine(self, 
+                  line_index: int,
+                  coord: tuple,
+                  coincident: bool = False,
+                  refresh: bool = True
     ) -> None:
         """
         Splits line into segments at specified coordinates.
