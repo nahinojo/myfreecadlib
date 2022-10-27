@@ -1,5 +1,3 @@
-from matplotlib.mathtext import math_to_image
-from soupsieve import match
 import FreeCAD as App
 import Part
 import Sketcher
