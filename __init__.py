@@ -1,1 +1,1 @@
-from .sketchertool import SketcherTool
+from .sketchertool.sketchertool import SketcherTool
